@@ -43,7 +43,7 @@ fn main() -> io::Result<()> {
     if let Some(specified_config_path) = args.config_path {
         config_path = PathBuf::from(specified_config_path);
     } else if let Some(config_dir) = dirs_2::config_dir() {
-        config_path = config_dir.join(our_program_name).join("config.json");
+        config_path = config_dir.join(our_program_name).join("config");
     } else {
         eprintln!(
             "We cannot find a config file, you can specify one with --config_path or put one on system-level config path."
@@ -55,7 +55,8 @@ fn main() -> io::Result<()> {
     }
 
     let config_json_data = fs::read_to_string(config_path).unwrap();
-    let config: Config = serde_json::from_str(&config_json_data)?;
+    let config: Config = serde_yaml::from_str(&config_json_data)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
     let contents = fs::read_to_string(file_path).unwrap();
 
     let parser = Parser::new(config.reg_pattern_list, config.finished_reg_pattern_list);
