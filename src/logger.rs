@@ -18,9 +18,7 @@ pub static LOGGER: OnceLock<Logger> = OnceLock::new();
 
 pub fn logger_init(min_level: LogLevel) {
     LOGGER
-        .set(Logger {
-            min_level: min_level,
-        })
+        .set(Logger { min_level })
         .expect("Logger is already initialized!");
 }
 

@@ -45,24 +45,25 @@ fn main() -> io::Result<()> {
 
     let our_program_name = "watching_log_parser";
 
-    let mut config_path = PathBuf::new();
-    let mut cache_path = PathBuf::new();
-    let mut file_path = PathBuf::from(args.filename);
+    let file_path = PathBuf::from(args.filename);
 
-    if let Some(specified_config_path) = args.config_path {
-        config_path = PathBuf::from(specified_config_path);
+    let config_path = if let Some(specified_config_path) = args.config_path {
+        PathBuf::from(specified_config_path)
     } else if let Some(config_dir) = dirs_2::config_dir() {
-        config_path = config_dir.join(our_program_name).join("config");
+        config_dir.join(our_program_name).join("config")
     } else {
         eprintln!(
             "We cannot find a config file, you can specify one with --config_path or put one on system-level config path."
         );
         process::exit(1);
-    }
+    };
 
-    if let Some(cache_dir) = dirs_2::cache_dir() {
-        cache_path = cache_dir.join(our_program_name).join("cache.db");
-    }
+    let cache_path = if let Some(cache_dir) = dirs_2::cache_dir() {
+        cache_dir.join(our_program_name).join("cache.db")
+    } else {
+        eprintln!("We cannot find the system-level cache dir!");
+        process::exit(1);
+    };
 
     logger_init(args.log_level);
 

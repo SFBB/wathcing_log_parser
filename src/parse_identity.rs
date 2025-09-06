@@ -1,5 +1,5 @@
 use super::datatype::Metadata;
-use super::{log_debug, log_error, log_info, log_warn};
+use super::{log_debug, log_error};
 use chinese_number::from_chinese_to_u16;
 use chrono::{NaiveDateTime, NaiveTime};
 use regex::Regex;
@@ -33,18 +33,14 @@ fn parse_time(time_str: &str) -> Option<NaiveTime> {
         let hours = parse_number(parts[0]);
         let minutes = parse_number(parts[1]);
         let seconds = parse_number(parts[2]);
-        if hours.is_some() && minutes.is_some() && seconds.is_some() {
-            return NaiveTime::from_hms_opt(
-                hours.unwrap().into(),
-                minutes.unwrap().into(),
-                seconds.unwrap().into(),
-            );
+        if let (Some(h), Some(m), Some(s)) = (hours, minutes, seconds) {
+            return NaiveTime::from_hms_opt(h.into(), m.into(), s.into());
         }
     } else if parts.len() == 2 {
         let minutes = parse_number(parts[0]);
         let seconds = parse_number(parts[1]);
-        if minutes.is_some() && seconds.is_some() {
-            return NaiveTime::from_hms_opt(0, minutes.unwrap().into(), seconds.unwrap().into());
+        if let (Some(m), Some(s)) = (minutes, seconds) {
+            return NaiveTime::from_hms_opt(0, m.into(), s.into());
         }
     }
     None
@@ -148,10 +144,7 @@ mod parser_tests {
 
         let parser = Parser::new(Vec::<String>::new(), Vec::<String>::new());
 
-        let lines: Vec<String> = contents
-            .lines()
-            .filter_map(|line| Some(line.to_string()))
-            .collect();
+        let lines: Vec<String> = contents.lines().map(String::from).collect();
 
         let metadata_list = parser.parse_metadata(&lines);
 
