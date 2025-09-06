@@ -1,0 +1,4 @@
+reg_pattern_list:
+  - "(?P<name>[^\\s]+)"
+finished_reg_pattern_list:
+  - "finished"
