@@ -1,4 +1,5 @@
 use super::datatype::Metadata;
+use super::{log_debug, log_error, log_info, log_warn};
 use chinese_number::from_chinese_to_u16;
 use chrono::{NaiveDateTime, NaiveTime};
 use regex::Regex;
@@ -95,17 +96,19 @@ impl Parser {
                             .and_then(|s| parse_datetime(s.as_str()));
                         let note: Option<String> =
                             caps.name("note").map(|m| String::from(m.as_str()));
-                        // println!(
-                        //     "hash_value: {}, name: {}, b_finished: {}, season: {:?}, episode: {:?}, time_at_episode: {:?}, logged_time: {:?}, note: {:?}",
-                        //     hash_value,
-                        //     name,
-                        //     b_finished.to_string(),
-                        //     season,
-                        //     episode,
-                        //     time_at_episode,
-                        //     logged_time,
-                        //     note
-                        // );
+                        log_debug!(
+                            "hash_value: {}, name: {}, b_finished: {}, season: {:?}, episode: {:?}, time_at_episode: {:?}, logged_time: {:?}, note: {:?}, raw: {}, reg: {}",
+                            hash_value,
+                            name,
+                            b_finished.to_string(),
+                            season,
+                            episode,
+                            time_at_episode,
+                            logged_time,
+                            note,
+                            line,
+                            reg
+                        );
                         result.push(Metadata {
                             name,
                             b_finished,
@@ -124,8 +127,8 @@ impl Parser {
             }
 
             if !b_found {
-                eprintln! {"This line cannot match any regex patterns:\n{}", line};
-                eprintln! {"This line cannot match any regex patterns:\n{}", line};
+                log_error! {"This line cannot match any regex patterns:\n{}", line};
+                log_error! {"This line cannot match any regex patterns:\n{}", line};
             }
         }
 

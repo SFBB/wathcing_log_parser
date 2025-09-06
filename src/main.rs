@@ -1,10 +1,11 @@
 mod datatype;
+mod logger;
+use logger::*;
 use serde::Deserialize;
 use std::process;
 mod parse_identity;
 mod stats;
 use clap::Parser as ClapParser;
-use dirs_2;
 use parse_identity::*;
 use stats::*;
 use std::path::PathBuf;
@@ -23,6 +24,14 @@ struct Args {
     // file
     #[arg(short, long)]
     filename: String,
+
+    #[arg(
+        short,
+        long,
+        value_enum, default_value_t = LogLevel::Warn,
+        help = "If not set, we will use warning leve. The options are: error, warn, info, debug."
+    )]
+    log_level: LogLevel,
 }
 
 #[derive(Deserialize, Debug)]
@@ -50,9 +59,12 @@ fn main() -> io::Result<()> {
         );
         process::exit(1);
     }
+
     if let Some(cache_dir) = dirs_2::cache_dir() {
         cache_path = cache_dir.join(our_program_name).join("cache.db");
     }
+
+    logger_init(args.log_level);
 
     let config_json_data = fs::read_to_string(config_path).unwrap();
     let config: Config = serde_yaml::from_str(&config_json_data)
