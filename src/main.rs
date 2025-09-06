@@ -61,14 +61,15 @@ fn main() -> io::Result<()> {
     };
 
     let cache_path = if let Some(cache_dir) = dirs_2::cache_dir() {
-        cache_dir.join(our_program_name).join("cache.db")
+        let our_cache_dir = cache_dir.join(our_program_name);
+        if !our_cache_dir.exists() {
+            fs::create_dir_all(&our_cache_dir)?;
+        }
+        our_cache_dir.join("cache.db")
     } else {
         eprintln!("We cannot find the system-level cache dir!");
         process::exit(1);
     };
-    if !cache_path.exists() {
-        fs::create_dir_all(&cache_path)?;
-    }
 
     logger_init(args.log_level);
 

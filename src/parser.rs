@@ -134,7 +134,12 @@ impl Parser {
                             note,
                         });
                         if let Some(cache) = &self.cache {
-                            cache.add_or_update_cache(result.last().unwrap()).is_ok();
+                            match cache.add_or_update_cache(result.last().unwrap()) {
+                                Ok(_r) => {}
+                                Err(e) => {
+                                    log_error!("{}", e);
+                                }
+                            }
                         }
 
                         b_found = true;

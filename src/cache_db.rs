@@ -36,7 +36,7 @@ impl Cache {
         let conn = Connection::open(db_path)?;
         conn.execute(
             "CREATE TABLE IF NOT EXISTS metadata (
-            id INTEGER PRIMARY KEY,
+            id TEXT PRIMARY KEY,
             serialized_data TEXT NOT NULL,
             name TEXT NOT NULL,
             b_finished BOOL NOT NULL,
@@ -53,20 +53,22 @@ impl Cache {
     pub fn query_cache(&self, hash_value: u64) -> Option<Metadata> {
         if let Ok(mut stmt) = self
             .conn
-            .prepare("SELECT serialized_data FROM metadata wehre id = ?1")
+            .prepare("SELECT serialized_data FROM metadata WHERE id = ?1")
         {
-            stmt.query_row(params![hash_value], |row| {
-                let serialized_data: String = row.get(0)?;
-                let metadata: Metadata = serde_json::from_str(&serialized_data).map_err(|e| {
-                    rusqlite::Error::FromSqlConversionFailure(
-                        0,
-                        rusqlite::types::Type::Text,
-                        Box::new(e),
-                    )
-                })?;
-                Ok(metadata)
-            })
-            .ok();
+            return stmt
+                .query_row(params![hash_value.to_string()], |row| {
+                    let serialized_data: String = row.get(0)?;
+                    let metadata: Metadata =
+                        serde_json::from_str(&serialized_data).map_err(|e| {
+                            rusqlite::Error::FromSqlConversionFailure(
+                                0,
+                                rusqlite::types::Type::Text,
+                                Box::new(e),
+                            )
+                        })?;
+                    Ok(metadata)
+                })
+                .ok();
         }
         None
     }
@@ -86,20 +88,16 @@ impl Cache {
         )?;
         let serialized_data = serde_json::to_string(&metadata)?;
         stmt.execute(params![
-            metadata.id,
+            metadata.id.to_string(),
             serialized_data,
             metadata.name,
             metadata.b_finished,
             metadata.episode,
             metadata
                 .time_at_episode
-                .map(|t| t.num_seconds_from_midnight())
-                .unwrap_or(0),
+                .map(|t| t.num_seconds_from_midnight()),
             metadata.season,
-            metadata
-                .logged_time
-                .map(|t| t.and_utc().timestamp())
-                .unwrap_or(0),
+            metadata.logged_time.map(|t| t.and_utc().timestamp()),
             metadata.note
         ])?;
         Ok(())
