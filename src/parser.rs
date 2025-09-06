@@ -1,3 +1,4 @@
+use super::cache_db::Cache;
 use super::datatype::Metadata;
 use super::{log_debug, log_error};
 use chinese_number::from_chinese_to_u16;
@@ -14,6 +15,8 @@ pub struct Parser {
     // This is another pattern, it will run this against each line to determine if this entry
     // represent the watching is finished or not.
     pub finished_reg_pattern_list: Vec<String>,
+
+    pub cache: Option<Cache>,
 }
 
 fn parse_number(number_str: &str) -> Option<u16> {
@@ -47,10 +50,15 @@ fn parse_time(time_str: &str) -> Option<NaiveTime> {
 }
 
 impl Parser {
-    pub fn new(reg_pattern_list: Vec<String>, finished_reg_pattern_list: Vec<String>) -> Self {
+    pub fn new(
+        reg_pattern_list: Vec<String>,
+        finished_reg_pattern_list: Vec<String>,
+        cache: Option<Cache>,
+    ) -> Self {
         Parser {
             reg_pattern_list,
             finished_reg_pattern_list,
+            cache,
         }
     }
 
@@ -59,12 +67,22 @@ impl Parser {
 
         for line in lines {
             let mut b_found: bool = false;
+            let hash_value = xxh3::xxh3_64(line.as_bytes());
+            let metadata = if let Some(cache) = &self.cache {
+                cache.query_cache(hash_value)
+            } else {
+                None
+            };
+            if metadata.is_some() {
+                result.push(metadata.unwrap());
+                b_found = true;
+                continue;
+            }
+
             for reg in &self.reg_pattern_list {
                 let re = Regex::new(reg).unwrap();
                 if re.is_match(line) {
                     if let Some(caps) = re.captures(line) {
-                        let hash_value = xxh3::xxh3_64(line.as_bytes());
-
                         let name = String::from(caps.name("name").unwrap().as_str());
 
                         // if name.contains("") {
@@ -106,6 +124,7 @@ impl Parser {
                             reg
                         );
                         result.push(Metadata {
+                            id: hash_value,
                             name,
                             b_finished,
                             episode,
@@ -114,6 +133,9 @@ impl Parser {
                             logged_time,
                             note,
                         });
+                        if let Some(cache) = &self.cache {
+                            cache.add_or_update_cache(result.last().unwrap()).is_ok();
+                        }
 
                         b_found = true;
 
@@ -142,7 +164,7 @@ mod parser_tests {
         let file_path = "tests/standard.txt";
         let contents = fs::read_to_string(file_path).unwrap();
 
-        let parser = Parser::new(Vec::<String>::new(), Vec::<String>::new());
+        let parser = Parser::new(Vec::<String>::new(), Vec::<String>::new(), None);
 
         let lines: Vec<String> = contents.lines().map(String::from).collect();
 

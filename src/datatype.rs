@@ -1,7 +1,9 @@
 use chrono::{NaiveDateTime, NaiveTime};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Metadata {
+    pub id: u64,
     pub name: String,
     pub b_finished: bool,
     pub episode: Option<u16>,

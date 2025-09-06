@@ -1,12 +1,14 @@
+mod cache_db;
+use cache_db::Cache;
 mod datatype;
 mod logger;
 use logger::*;
 use serde::Deserialize;
 use std::process;
-mod parse_identity;
+mod parser;
+use parser::*;
 mod stats;
 use clap::Parser as ClapParser;
-use parse_identity::*;
 use stats::*;
 use std::path::PathBuf;
 use std::{fs, io};
@@ -64,6 +66,9 @@ fn main() -> io::Result<()> {
         eprintln!("We cannot find the system-level cache dir!");
         process::exit(1);
     };
+    if !cache_path.exists() {
+        fs::create_dir_all(&cache_path)?;
+    }
 
     logger_init(args.log_level);
 
@@ -72,7 +77,11 @@ fn main() -> io::Result<()> {
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
     let contents = fs::read_to_string(file_path).unwrap();
 
-    let parser = Parser::new(config.reg_pattern_list, config.finished_reg_pattern_list);
+    let parser = Parser::new(
+        config.reg_pattern_list,
+        config.finished_reg_pattern_list,
+        Cache::new(cache_path.to_str().unwrap()).ok(),
+    );
 
     let lines: Vec<String> = contents.lines().map(|line| line.to_string()).collect();
 
