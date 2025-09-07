@@ -65,9 +65,17 @@ impl Parser {
     pub fn parse_metadata(&self, lines: &Vec<String>) -> Vec<Metadata> {
         let mut result = Vec::<Metadata>::new();
 
+        let reg_pool_string = [
+            &self.reg_pattern_list[..],
+            &self.finished_reg_pattern_list[..],
+        ]
+        .concat()
+        .join("###")
+        .to_string();
+
         for line in lines {
             let mut b_found: bool = false;
-            let hash_value = xxh3::xxh3_64(line.as_bytes());
+            let hash_value = xxh3::xxh3_64((line.clone() + reg_pool_string.as_str()).as_bytes());
             let metadata = if let Some(cache) = &self.cache {
                 cache.query_cache(hash_value)
             } else {
@@ -90,10 +98,12 @@ impl Parser {
                         // }
 
                         let mut b_finished = false;
+                        let mut matched_finished_reg_pattern: Option<String> = None;
                         for finished_reg_pattern in &self.finished_reg_pattern_list {
                             let finished_re = Regex::new(finished_reg_pattern).unwrap();
                             if finished_re.is_match(line) {
                                 b_finished = true;
+                                matched_finished_reg_pattern = Some(finished_reg_pattern.clone());
                                 break;
                             }
                         }
@@ -132,9 +142,12 @@ impl Parser {
                             season,
                             logged_time,
                             note,
+                            raw_line: line.clone(),
+                            reg_pattern_matched: reg.clone(),
+                            finished_reg_pattern_matched: matched_finished_reg_pattern,
                         });
                         if let Some(cache) = &self.cache {
-                            match cache.add_or_update_cache(result.last().unwrap()) {
+                            match cache.add_cache(result.last().unwrap()) {
                                 Ok(_r) => {}
                                 Err(e) => {
                                     log_error!("{}", e);

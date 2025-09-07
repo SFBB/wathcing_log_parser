@@ -11,4 +11,7 @@ pub struct Metadata {
     pub season: Option<u16>,
     pub logged_time: Option<NaiveDateTime>,
     pub note: Option<String>,
+    pub raw_line: String,
+    pub reg_pattern_matched: String,
+    pub finished_reg_pattern_matched: Option<String>,
 }

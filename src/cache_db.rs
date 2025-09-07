@@ -44,7 +44,10 @@ impl Cache {
             time_at_episode INTEGER,
             season INTERGER,
             logged_time INTEGER,
-            note TEXT)",
+            note TEXT,
+            raw_line TEXT,
+            reg_pattern_matched TEXT,
+            finished_reg_pattern_matched TEXT)",
             [],
         )?;
         Ok(Cache { conn })
@@ -73,7 +76,7 @@ impl Cache {
         None
     }
 
-    pub fn add_or_update_cache(&self, metadata: &Metadata) -> CacheResult<()> {
+    pub fn add_cache(&self, metadata: &Metadata) -> CacheResult<()> {
         let mut stmt = self.conn.prepare(
             "INSERT INTO metadata (
             id,
@@ -84,7 +87,10 @@ impl Cache {
             time_at_episode,
             season,
             logged_time,
-            note) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            note,
+            raw_line,
+            reg_pattern_matched,
+            finished_reg_pattern_matched) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
         )?;
         let serialized_data = serde_json::to_string(&metadata)?;
         stmt.execute(params![
@@ -98,7 +104,10 @@ impl Cache {
                 .map(|t| t.num_seconds_from_midnight()),
             metadata.season,
             metadata.logged_time.map(|t| t.and_utc().timestamp()),
-            metadata.note
+            metadata.note,
+            metadata.raw_line,
+            metadata.reg_pattern_matched,
+            metadata.finished_reg_pattern_matched,
         ])?;
         Ok(())
     }
