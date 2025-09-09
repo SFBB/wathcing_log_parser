@@ -6,6 +6,7 @@ use logger::*;
 use serde::Deserialize;
 use std::process;
 mod parser;
+mod parser_task_manager;
 use parser::*;
 mod stats;
 use clap::Parser as ClapParser;
@@ -40,6 +41,8 @@ struct Args {
 struct Config {
     reg_pattern_list: Vec<String>,
     finished_reg_pattern_list: Vec<String>,
+    max_thread_num: Option<usize>,
+    min_task_num_per_thread: Option<usize>,
 }
 
 fn main() -> io::Result<()> {
@@ -78,10 +81,12 @@ fn main() -> io::Result<()> {
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
     let contents = fs::read_to_string(file_path).unwrap();
 
-    let parser = Parser::new(
+    let mut parser = Parser::new(
         config.reg_pattern_list,
         config.finished_reg_pattern_list,
         Cache::new(cache_path.to_str().unwrap()).ok(),
+        config.max_thread_num.unwrap_or(1),
+        config.min_task_num_per_thread.unwrap_or(1),
     );
 
     let lines: Vec<String> = contents.lines().map(|line| line.to_string()).collect();

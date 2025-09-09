@@ -1,7 +1,6 @@
 use super::datatype::*;
 use chrono::Timelike;
 use rusqlite::{Connection, params};
-use serde_json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
