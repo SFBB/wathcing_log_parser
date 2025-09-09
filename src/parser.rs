@@ -83,7 +83,6 @@ impl Parser {
 
         let mut index: u16 = 0;
         for line in lines {
-            let mut b_found: bool = false;
             let hash_value = xxh3::xxh3_64((line.clone() + reg_pool_string.as_str()).as_bytes());
             let metadata = if let Some(cache) = &self.cache {
                 cache.query_cache(hash_value)
@@ -91,8 +90,6 @@ impl Parser {
                 None
             };
             if metadata.is_some() {
-                result.push(metadata.unwrap());
-                b_found = true;
                 continue;
             }
 
@@ -181,22 +178,32 @@ impl Parser {
 
         match self.task_manager.run() {
             Ok(result_list) => {
-                for r in result_list {
+                for metadata in result_list.into_iter().flatten() {
                     if let Some(cache) = &self.cache {
-                        match cache.add_cache(result.last().unwrap()) {
+                        match cache.add_cache(&metadata) {
                             Ok(_r) => {}
                             Err(e) => {
                                 log_error!("{}", e);
                             }
                         }
                     }
-                    if let Some(metadata) = r {
-                        result.push(metadata);
-                    }
                 }
             }
             Err(e) => {
                 log_error!("{}", e);
+            }
+        }
+
+        for line in lines {
+            let hash_value = xxh3::xxh3_64((line.clone() + reg_pool_string.as_str()).as_bytes());
+            let metadata = if let Some(cache) = &self.cache {
+                cache.query_cache(hash_value)
+            } else {
+                None
+            };
+            if let Some(m) = metadata {
+                result.push(m);
+                continue;
             }
         }
 
