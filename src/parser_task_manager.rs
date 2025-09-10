@@ -41,12 +41,12 @@ impl From<Box<dyn Any + Send>> for ParserTaskManagerError {
 pub type ParserTaskManagerResult<T> = Result<T, ParserTaskManagerError>;
 
 trait ParserCallback:
-    Fn(&str, u16, u64, &Vec<String>, &Vec<String>) -> Option<Metadata> + Send + Sync + 'static + Clone
+    Fn(&str, u32, u64, &Vec<String>, &Vec<String>) -> Option<Metadata> + Send + Sync + 'static + Clone
 {
 }
 
 impl<F> ParserCallback for F where
-    F: Fn(&str, u16, u64, &Vec<String>, &Vec<String>) -> Option<Metadata>
+    F: Fn(&str, u32, u64, &Vec<String>, &Vec<String>) -> Option<Metadata>
         + Send
         + Sync
         + 'static
@@ -59,7 +59,7 @@ pub struct ParserTask<F>
 where
     F: ParserCallback,
 {
-    pub index: u16,
+    pub index: u32,
     pub hash_value: u64,
     pub line: String,
     pub reg_pattern_list: Vec<String>,

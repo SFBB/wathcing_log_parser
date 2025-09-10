@@ -7,7 +7,7 @@ use chrono::{NaiveDateTime, NaiveTime};
 use regex::Regex;
 use xxhash_rust::xxh3;
 
-type DefaultParserCallback = fn(&str, u16, u64, &Vec<String>, &Vec<String>) -> Option<Metadata>;
+type DefaultParserCallback = fn(&str, u32, u64, &Vec<String>, &Vec<String>) -> Option<Metadata>;
 
 pub struct Parser {
     // reg pattern should follow:
@@ -81,7 +81,7 @@ impl Parser {
         .join("###")
         .to_string();
 
-        let mut index: u16 = 0;
+        let mut index: u32 = 0;
         for line in lines {
             let hash_value = xxh3::xxh3_64((line.clone() + reg_pool_string.as_str()).as_bytes());
             let metadata = if let Some(cache) = &self.cache {
@@ -89,7 +89,9 @@ impl Parser {
             } else {
                 None
             };
-            if metadata.is_some() {
+            if let Some(mut m) = metadata {
+                m.index = index;
+                result.push(m);
                 continue;
             }
 
@@ -151,6 +153,7 @@ impl Parser {
                                     reg
                                 );
                                 return Some(Metadata {
+                                    index,
                                     id: hash_value,
                                     name,
                                     b_finished,
@@ -187,23 +190,11 @@ impl Parser {
                             }
                         }
                     }
+                    result.push(metadata);
                 }
             }
             Err(e) => {
                 log_error!("{}", e);
-            }
-        }
-
-        for line in lines {
-            let hash_value = xxh3::xxh3_64((line.clone() + reg_pool_string.as_str()).as_bytes());
-            let metadata = if let Some(cache) = &self.cache {
-                cache.query_cache(hash_value)
-            } else {
-                None
-            };
-            if let Some(m) = metadata {
-                result.push(m);
-                continue;
             }
         }
 
