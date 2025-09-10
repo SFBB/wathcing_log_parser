@@ -5,6 +5,7 @@ use std::num::NonZeroUsize;
 use std::sync::Arc;
 use thiserror::Error;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 struct ThreadErrorPayload(Box<dyn Any + Send>);
 
@@ -40,7 +41,7 @@ impl From<Box<dyn Any + Send>> for ParserTaskManagerError {
 
 pub type ParserTaskManagerResult<T> = Result<T, ParserTaskManagerError>;
 
-trait ParserCallback:
+pub trait ParserCallback:
     Fn(&str, u32, u64, &Vec<String>, &Vec<String>) -> Option<Metadata> + Send + Sync + 'static + Clone
 {
 }
@@ -107,22 +108,8 @@ where
 
     pub fn get_thread_count(&self) -> usize {
         let total_tasks = self.get_task_count();
-        let calculated_threads =
-            (total_tasks + self.min_tasks_per_thread - 1) / self.min_tasks_per_thread;
+        let calculated_threads = total_tasks.div_ceil(self.min_tasks_per_thread);
         std::cmp::min(calculated_threads, self.max_thread_num)
-    }
-
-    pub fn get_tasks_for_thread(&self, thread_index: usize) -> Vec<ParserTask<F>> {
-        let thread_count = self.get_thread_count();
-        if thread_index >= thread_count {
-            return Vec::new();
-        }
-
-        let tasks_per_thread = (self.get_task_count() + thread_count - 1) / thread_count;
-        let start_index = thread_index * tasks_per_thread;
-        let end_index = std::cmp::min(start_index + tasks_per_thread, self.get_task_count());
-
-        self.task_list[start_index..end_index].to_vec()
     }
 
     pub fn run(&self) -> ParserTaskManagerResult<Vec<Option<Metadata>>> {
