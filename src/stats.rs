@@ -25,7 +25,7 @@ impl Stats {
         for metadata in &metadata_list {
             let title = format! {"{}-{:?}", &metadata.name, &metadata.season};
             if let std::collections::hash_map::Entry::Vacant(e) =
-                statsinfo_index_by_name.entry(title)
+                statsinfo_index_by_name.entry(title.clone())
             {
                 statsinfo_list.push(StatsInfo {
                     name: metadata.name.clone(),
@@ -36,7 +36,7 @@ impl Stats {
                 });
                 e.insert(statsinfo_list.len() - 1);
             } else {
-                let index: usize = statsinfo_index_by_name[&metadata.name];
+                let index: usize = statsinfo_index_by_name[&title];
                 let statsinfo = &mut statsinfo_list[index];
                 statsinfo.b_finished = metadata.b_finished || statsinfo.b_finished;
             }
