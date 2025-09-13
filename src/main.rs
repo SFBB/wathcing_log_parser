@@ -95,7 +95,15 @@ fn main() -> io::Result<()> {
     let stats = Stats::new(metadata_list);
     let unfinished_wathcing_list = stats.stats_unfinished();
     for unfinished_watching in unfinished_wathcing_list {
-        println!("name: {}", unfinished_watching.name);
+        if unfinished_watching.season.is_some() {
+            println!(
+                "{} season {}",
+                unfinished_watching.name,
+                unfinished_watching.season.unwrap()
+            );
+        } else {
+            println!("{}", unfinished_watching.name);
+        }
     }
 
     Ok(())

@@ -5,6 +5,7 @@ use super::datatype::Metadata;
 #[derive(Clone)]
 pub struct StatsInfo {
     pub name: String,
+    pub season: Option<u16>,
     pub watched_times: u16,
     pub b_finished: bool,
     pub related_entry: Vec<Metadata>,
@@ -22,9 +23,12 @@ impl Stats {
         let mut statsinfo_index_by_name: HashMap<String, usize> = HashMap::new();
 
         for metadata in &metadata_list {
-            if !statsinfo_index_by_name.contains_key(&metadata.name) {
+            if !statsinfo_index_by_name
+                .contains_key(&format! {"{}-{:?}", &metadata.name, &metadata.season})
+            {
                 statsinfo_list.push(StatsInfo {
                     name: metadata.name.clone(),
+                    season: metadata.season,
                     watched_times: 0,
                     b_finished: metadata.b_finished,
                     related_entry: vec![metadata.clone()],
