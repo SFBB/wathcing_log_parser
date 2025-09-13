@@ -23,8 +23,9 @@ impl Stats {
         let mut statsinfo_index_by_name: HashMap<String, usize> = HashMap::new();
 
         for metadata in &metadata_list {
-            if !statsinfo_index_by_name
-                .contains_key(&format! {"{}-{:?}", &metadata.name, &metadata.season})
+            let title = format! {"{}-{:?}", &metadata.name, &metadata.season};
+            if let std::collections::hash_map::Entry::Vacant(e) =
+                statsinfo_index_by_name.entry(title)
             {
                 statsinfo_list.push(StatsInfo {
                     name: metadata.name.clone(),
@@ -33,7 +34,7 @@ impl Stats {
                     b_finished: metadata.b_finished,
                     related_entry: vec![metadata.clone()],
                 });
-                statsinfo_index_by_name.insert(metadata.name.clone(), statsinfo_list.len() - 1);
+                e.insert(statsinfo_list.len() - 1);
             } else {
                 let index: usize = statsinfo_index_by_name[&metadata.name];
                 let statsinfo = &mut statsinfo_list[index];
