@@ -10,9 +10,17 @@ mod parser_task_manager;
 use parser::*;
 mod stats;
 use clap::Parser as ClapParser;
+use clap::ValueEnum;
 use stats::*;
 use std::path::PathBuf;
 use std::{fs, io};
+
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, ValueEnum)]
+pub enum Mode {
+    UnFinished,
+    Query,
+    All,
+}
 
 #[derive(ClapParser, Debug)]
 #[command(version, about, long_about = None)]
@@ -35,6 +43,12 @@ struct Args {
         help = "If not set, we will use warning leve. The options are: error, warn, info, debug."
     )]
     log_level: LogLevel,
+
+    #[arg(short, long, value_enum, default_value_t = Mode::UnFinished)]
+    mode: Mode,
+
+    #[arg(short, long, required_if_eq("mode", "query"))]
+    query_name: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -93,16 +107,72 @@ fn main() -> io::Result<()> {
 
     let metadata_list = parser.parse_metadata(&lines);
     let stats = Stats::new(metadata_list);
-    let unfinished_wathcing_list = stats.stats_unfinished();
-    for unfinished_watching in unfinished_wathcing_list {
-        if unfinished_watching.season.is_some() {
-            println!(
-                "{} season {}",
-                unfinished_watching.name,
-                unfinished_watching.season.unwrap()
-            );
+    if args.mode == Mode::UnFinished {
+        let unfinished_wathcing_list = stats.stats_unfinished();
+        for unfinished_watching in unfinished_wathcing_list {
+            if unfinished_watching.season.is_some() {
+                println!(
+                    "{} season {}",
+                    unfinished_watching.name,
+                    unfinished_watching.season.unwrap()
+                );
+            } else {
+                println!("{}", unfinished_watching.name);
+            }
+        }
+    } else if args.mode == Mode::All {
+        let all_wathcing_list = stats.stats_all();
+        for watching in all_wathcing_list {
+            if watching.season.is_some() {
+                println!(
+                    "{} season {} - {}",
+                    watching.name,
+                    watching.season.unwrap(),
+                    if watching.b_finished {
+                        "finished"
+                    } else {
+                        "unfinished"
+                    }
+                );
+            } else {
+                println!(
+                    "{} - {}",
+                    watching.name,
+                    if watching.b_finished {
+                        "finished"
+                    } else {
+                        "unfinished"
+                    }
+                );
+            }
+        }
+    } else if args.mode == Mode::Query {
+        let query_name = args.query_name.unwrap();
+        if let Some(watching) = stats.query_by_name(&query_name) {
+            if watching.season.is_some() {
+                println!(
+                    "{} season {} - {}",
+                    watching.name,
+                    watching.season.unwrap(),
+                    if watching.b_finished {
+                        "finished"
+                    } else {
+                        "unfinished"
+                    }
+                );
+            } else {
+                println!(
+                    "{} - {}",
+                    watching.name,
+                    if watching.b_finished {
+                        "finished"
+                    } else {
+                        "unfinished"
+                    }
+                );
+            }
         } else {
-            println!("{}", unfinished_watching.name);
+            println!("No record found for {}", query_name);
         }
     }
 
