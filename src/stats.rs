@@ -18,7 +18,9 @@ pub struct Stats {
 }
 
 impl Stats {
-    pub fn new(metadata_list: Vec<Metadata>) -> Self {
+    pub fn new(mut metadata_list: Vec<Metadata>) -> Self {
+        metadata_list.sort_by(|a, b| a.index.cmp(&b.index));
+
         let mut statsinfo_list: Vec<StatsInfo> = Vec::new();
         let mut statsinfo_index_by_name: HashMap<String, usize> = HashMap::new();
 
@@ -62,7 +64,10 @@ impl Stats {
         result
     }
 
-    pub fn query_by_name(&self) -> StatsInfo {
-        self.statsinfo_list[0].clone()
+    pub fn query_by_name(&self, name: &str) -> Option<StatsInfo> {
+        self.statsinfo_list
+            .iter()
+            .find(|&x| x.name.to_lowercase().contains(name.to_lowercase().as_str()))
+            .cloned()
     }
 }
