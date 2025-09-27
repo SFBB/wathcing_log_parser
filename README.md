@@ -33,7 +33,7 @@ Options:
 
 Users can specify a config file path. If there is none, this program will try to find the config file in the system's config path.
 
-:exclamation: The config file must exist, otherwise this program will exit with error.
+:warning: The config file must exist, otherwise this program will exit with error.
 
 The config file should contain sections below:
 
