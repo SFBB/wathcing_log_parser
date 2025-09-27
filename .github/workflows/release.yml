@@ -30,6 +30,22 @@ jobs:
 
       
 
+      - name: Install dependencies (linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.target }}" = "i686-unknown-linux-gnu" ]; then
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+            sudo apt-get install -y gcc-multilib libsqlite3-dev:i386
+          else
+            sudo apt-get install -y libsqlite3-dev
+          fi
+
+      - name: Install dependencies (macos)
+        if: runner.os == 'macOS'
+        run: brew install sqlite
+
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -38,7 +54,12 @@ jobs:
           override: true
 
       - name: Build binary
-        run: cargo build --release --target ${{ matrix.target }}
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cargo build --release --target ${{ matrix.target }} --features bundle-sqlite
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
         env:
           CARGO_TERM_COLOR: always
 
