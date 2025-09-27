@@ -40,7 +40,7 @@ struct Args {
         short,
         long,
         value_enum, default_value_t = LogLevel::Warn,
-        help = "If not set, we will use warning leve. The options are: error, warn, info, debug."
+        help = "If not set, we will use warning leve. The options are: error, warn, info, debug.\n"
     )]
     log_level: LogLevel,
 
@@ -49,7 +49,7 @@ struct Args {
         long,
         value_enum,
         default_value_t = Mode::UnFinished,
-        help = "We have three mode right now,\n\tunfinished(default): list all unifhished watching\n\tquery: list all matching watching with give query name\n\tall: list all watching.\n")]
+        help = "We have three modes right now,\n\tunfinished(default): list all unifhished watching\n\tquery: list all matching watching with give query name\n\tall: list all watching.\n")]
     mode: Mode,
 
     #[arg(short, long, required_if_eq("mode", "query"))]
