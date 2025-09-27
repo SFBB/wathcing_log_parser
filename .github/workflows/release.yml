@@ -35,10 +35,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-multilib libsqlite3-dev:i386
 
-      - name: Install sqlite3 (windows)
+      - name: Setup MSYS2
         if: matrix.os == 'windows-latest'
-        shell: msys2 {0}
-        run: pacman -S --noconfirm mingw-w64-x86_64-sqlite3
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-sqlite3
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
