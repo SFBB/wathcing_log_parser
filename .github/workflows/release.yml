@@ -54,14 +54,13 @@ jobs:
           override: true
 
       - name: Build binary
+        shell: bash
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             cargo build --release --target ${{ matrix.target }} --features bundle-sqlite
           else
             cargo build --release --target ${{ matrix.target }}
           fi
-        env:
-          CARGO_TERM_COLOR: always
 
       - name: Package binary
         run: |
