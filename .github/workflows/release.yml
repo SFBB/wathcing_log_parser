@@ -37,7 +37,8 @@ jobs:
 
       - name: Install sqlite3 (windows)
         if: matrix.os == 'windows-latest'
-        run: msys2-pacman -S --noconfirm mingw-w64-x86_64-sqlite3
+        shell: msys2 {0}
+        run: pacman -S --noconfirm mingw-w64-x86_64-sqlite3
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
