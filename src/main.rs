@@ -44,7 +44,12 @@ struct Args {
     )]
     log_level: LogLevel,
 
-    #[arg(short, long, value_enum, default_value_t = Mode::UnFinished)]
+    #[arg(
+        short,
+        long,
+        value_enum,
+        default_value_t = Mode::UnFinished,
+        help = "We have three mode right now,\n\tunfinished(default): list all unifhished watching\n\tquery: list all matching watching with give query name\n\tall: list all watching.")]
     mode: Mode,
 
     #[arg(short, long, required_if_eq("mode", "query"))]
@@ -148,28 +153,36 @@ fn main() -> io::Result<()> {
         }
     } else if args.mode == Mode::Query {
         let query_name = args.query_name.unwrap();
-        if let Some(watching) = stats.query_by_name(&query_name) {
-            if watching.season.is_some() {
-                println!(
-                    "{} season {} - {}",
-                    watching.name,
-                    watching.season.unwrap(),
-                    if watching.b_finished {
-                        "finished"
-                    } else {
-                        "unfinished"
-                    }
-                );
-            } else {
-                println!(
-                    "{} - {}",
-                    watching.name,
-                    if watching.b_finished {
-                        "finished"
-                    } else {
-                        "unfinished"
-                    }
-                );
+        let matching_watching_list = stats.query_by_name(&query_name);
+        if matching_watching_list.len() > 1 {
+            println!(
+                "Found {} matching records for {}:",
+                matching_watching_list.len(),
+                query_name
+            );
+            for watching in matching_watching_list {
+                if watching.season.is_some() {
+                    println!(
+                        "{} season {} - {}",
+                        watching.name,
+                        watching.season.unwrap(),
+                        if watching.b_finished {
+                            "finished"
+                        } else {
+                            "unfinished"
+                        }
+                    );
+                } else {
+                    println!(
+                        "{} - {}",
+                        watching.name,
+                        if watching.b_finished {
+                            "finished"
+                        } else {
+                            "unfinished"
+                        }
+                    );
+                }
             }
         } else {
             println!("No record found for {}", query_name);

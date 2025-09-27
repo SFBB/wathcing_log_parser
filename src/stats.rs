@@ -64,10 +64,17 @@ impl Stats {
         result
     }
 
-    pub fn query_by_name(&self, name: &str) -> Option<StatsInfo> {
-        self.statsinfo_list
-            .iter()
-            .find(|&x| x.name.to_lowercase().contains(name.to_lowercase().as_str()))
-            .cloned()
+    pub fn query_by_name(&self, name: &str) -> Vec<StatsInfo> {
+        let mut result = Vec::new();
+        for statsinfo in &self.statsinfo_list {
+            if statsinfo
+                .name
+                .to_lowercase()
+                .contains(name.to_lowercase().as_str())
+            {
+                result.push(statsinfo.clone());
+            }
+        }
+        result
     }
 }
