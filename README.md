@@ -22,11 +22,11 @@ Options:
   -m, --mode <MODE>                We have three mode right now,
                                         unfinished(default): list all unifhished watching
                                         query: list all matching watching with give query name
-                                        all: list all watching. [default: un-finished] [possible values: un-finished, query, all]
+                                        all: list all watching.
+                                    [default: un-finished] [possible values: un-finished, query, all]
   -q, --query-name <QUERY_NAME>
   -h, --help                       Print help
   -V, --version                    Print version
-
 ```
 
 ### Config file
@@ -80,4 +80,3 @@ We treat each line of the watching log as one entry, we will parse each entry.
 The caching combines each entry's hash value and the all regex list hash value as the caching key.
 
 So once the regex list is changed, all entries will be re-parsed. If only some entries are changed, only those entries will be re-parsed.
-
