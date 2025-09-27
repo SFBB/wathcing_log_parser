@@ -28,21 +28,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install 32-bit dependencies
-        if: matrix.target == 'i686-unknown-linux-gnu'
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib libsqlite3-dev:i386
-
-      - name: Setup MSYS2
-        if: matrix.os == 'windows-latest'
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-sqlite3
+      
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
