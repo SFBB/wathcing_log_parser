@@ -6,6 +6,8 @@ This is a toy project for parsing watching logs using named regex.
 
 It deploys multi-threading to speed up the parsing process and uses caching to avoid re-parsing the same logs.
 
+Right now, it only mainly supports parsing finished / unfinished of the watching.
+
 ## How to use
 
 ### General
@@ -28,6 +30,19 @@ Options:
   -h, --help                       Print help
   -V, --version                    Print version
 ```
+
+### wathing log file
+
+This is the file we try to parse, each line is the watching entry.
+
+Example:
+
+```plain text
+ABC 第1季第二集 10:00 2023-10-01 10:00:00
+ABC 第1季 看完 2023-10-01 10:00:00
+```
+
+We will group the watching logs together based on the name and the season.
 
 ### Config file
 
