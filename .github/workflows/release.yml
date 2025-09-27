@@ -1,4 +1,3 @@
-
 name: Release
 
 on:
@@ -8,8 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build and Release
-    runs-on: ubuntu-latest
+    name: Build
     strategy:
       matrix:
         include:
@@ -25,7 +23,7 @@ jobs:
           - target: x86_64-pc-windows-gnu
             os: windows-latest
             name: windows
-
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -52,11 +50,28 @@ jobs:
           fi
           cd ../../..
         shell: bash
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-${{ matrix.name }}
+          path: release-${{ matrix.name }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.target == 'x86_64-unknown-linux-gnu' # Only create release once
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -65,12 +80,42 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
+      - name: Upload Release Assets
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-${{ matrix.name }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
-          asset_name: release-${{ matrix.name }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
-          asset_content_type: application/octet-stream
+          asset_path: artifacts/release-linux-amd64/release-linux-amd64.tar.gz
+          asset_name: release-linux-amd64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/release-linux-i386/release-linux-i386.tar.gz
+          asset_name: release-linux-i386.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/release-macos/release-macos.tar.gz
+          asset_name: release-macos.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/release-windows/release-windows.zip
+          asset_name: release-windows.zip
+          asset_content_type: application/zip
