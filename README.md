@@ -35,7 +35,7 @@ Users can specify a config file path. If there is none, this program will try to
 
 :warning: The config file must exist, otherwise this program will exit with error.
 
-The config file should contain sections below:
+The config file should contain sections below in `yaml` format:
 
 ```yaml
 reg_pattern_list:
