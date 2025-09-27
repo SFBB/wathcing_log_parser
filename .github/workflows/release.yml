@@ -44,9 +44,9 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            zip ../../../release-${{ matrix.name }}.zip watching_log_parser.exe
+            zip ../../../release-${{ matrix.name }}.zip watching_record.exe
           else
-            tar -czf ../../../release-${{ matrix.name }}.tar.gz watching_log_parser
+            tar -czf ../../../release-${{ matrix.name }}.tar.gz watching_record
           fi
           cd ../../..
         shell: bash
