@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+    branches:
+      - "release"
 
 jobs:
   build:
@@ -85,6 +87,7 @@ jobs:
 
   release:
     name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:
