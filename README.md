@@ -46,7 +46,7 @@ We will group the watching logs together based on the name and the season.
 
 ### Config file
 
-Users can specify a config file path. If there is none, this program will try to find the config file in the system's config path.
+Users can specify a config file path. If there is none, this program will try to find the config file in the system's config path. In such case, there should be a yaml format file named `config` under the system's config path.
 
 :warning: The config file must exist, otherwise this program will exit with error.
 
