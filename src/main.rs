@@ -40,7 +40,7 @@ struct Args {
         short,
         long,
         value_enum, default_value_t = LogLevel::Warn,
-        help = "If not set, we will use warning leve. The options are: error, warn, info, debug.\n"
+        help = "If not set, we will use the warning leve. The options are: error, warn, info, debug.\n"
     )]
     log_level: LogLevel,
 
